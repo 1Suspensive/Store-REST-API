@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "security.jwt.key",
+    "type": "java.lang.String",
+    "description": "Private key to sign JWT'"
+  },
+  {
+    "name": "security.jwt.user.generator",
+    "type": "java.lang.String",
+    "description": "User generator for JWT'"
+  }
+]}
