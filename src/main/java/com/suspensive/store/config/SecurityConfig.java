@@ -3,6 +3,7 @@ package com.suspensive.store.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -31,6 +32,12 @@ public class SecurityConfig {
         return httpSecurity
         .csrf(crsf -> crsf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(http->{
+            //Public Requests
+            http.requestMatchers(HttpMethod.GET,"/hello").permitAll();
+            http.requestMatchers(HttpMethod.POST,"/auth/**").permitAll();
+            http.anyRequest().authenticated();
+        })
         .addFilterBefore(new JwtTokenValidatorFilter(jwtUtils), BasicAuthenticationFilter.class)
         .build();
     }

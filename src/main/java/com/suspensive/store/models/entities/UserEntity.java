@@ -24,8 +24,10 @@ public class UserEntity {
 
     private String password;
 
+    private String email;
+
     @Column(name = "phone_number")
-    @Size(max=15)
+    @Size(max=15,message = "Number is not valid")
     private String phoneNumber;
 
     private double wallet;
@@ -38,7 +40,7 @@ public class UserEntity {
     @JoinTable(name = "user_cart", joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="product_id"))
     private List<ProductEntity> cart;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="role_id"))
     private Set<RoleEntity> roles;
 
