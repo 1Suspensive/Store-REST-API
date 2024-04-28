@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
-import com.suspensive.store.services.UserService;
+import com.suspensive.store.services.IUserService;
 
 import jakarta.validation.Valid;
 
@@ -18,7 +18,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/auth")
 public class AuthenticationController {
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponseDTO> signup(@RequestBody @Valid AuthSignUpUserDTO user){

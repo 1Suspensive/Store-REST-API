@@ -23,7 +23,7 @@ import com.suspensive.store.util.JwtUtils;
 import jakarta.transaction.Transactional;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements IUserService{
 
     @Autowired
     private UserRepository userRepository;
@@ -37,6 +37,9 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private IEmailService emailService;
+
     @Override
     @Transactional
     public AuthResponseDTO createUser(AuthSignUpUserDTO user) {
@@ -44,6 +47,7 @@ public class UserServiceImpl implements UserService{
         UserEntity newUser = UserEntity.builder()
                              .username(user.username())
                              .password(passwordEncoder.encode(user.password()))
+                             .email(user.email())
                              .phoneNumber(user.phoneNumber())
                              .wallet(user.wallet())
                              .roles(defaultRole)
@@ -60,6 +64,13 @@ public class UserServiceImpl implements UserService{
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(userCreated.getUsername(), userCreated.getPassword(),authorities);
         String token = jwtUtils.createToken(authentication);
+
+        //Sending email..
+        final String welcomeMailMessage = "Welcome to our store...";
+        final String welcomeMailSubject = "Thanks for choosing us, you have created an account.";
+
+        emailService.sendEmail(userCreated.getEmail(),welcomeMailMessage,welcomeMailSubject);
+
         return new AuthResponseDTO(userCreated.getUsername(), "User created Successfully", token, true);
     }
 

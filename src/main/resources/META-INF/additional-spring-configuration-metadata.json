@@ -8,5 +8,16 @@
     "name": "security.jwt.user.generator",
     "type": "java.lang.String",
     "description": "User generator for JWT'"
+  },
+  {
+    "name": "java.mail.sender.username",
+    "type": "java.lang.String",
+    "description": "User who sends email'"
+  },
+  {
+    "name": "java.mail.sender.password",
+    "type": "java.lang.String",
+    "description": "User´s password'"
   }
+
 ]}
