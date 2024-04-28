@@ -3,7 +3,7 @@ package com.suspensive.store;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/* 
+/* */
 import com.suspensive.store.models.entities.PermissionEntity;
 import com.suspensive.store.models.entities.RoleEntity;
 import com.suspensive.store.models.entities.RolesEnum;
@@ -12,7 +12,7 @@ import com.suspensive.store.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import java.util.Set;
-*/
+
 
 
 @SpringBootApplication
@@ -21,7 +21,7 @@ public class StoreApplication{
 	public static void main(String[] args) {
 		SpringApplication.run(StoreApplication.class, args);
 	}
-	/*Code to create admin, roles and permissions by default 
+	/*Code to create admin, roles and permissions by default */
 	@Bean
 	CommandLineRunner init(UserRepository userRepository){
 		return args ->{
@@ -49,5 +49,5 @@ public class StoreApplication{
 			userRepository.save(admin);
 		};
 	}
-	*/
+	
 }

@@ -1,5 +1,8 @@
 package com.suspensive.store.services;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -24,6 +27,17 @@ public class EmailServiceImpl implements IEmailService{
         mailMessage.setText(message);
 
         javaMailSender.send(mailMessage);
+    }
+
+    @Override
+    public void validateEmail(String email) throws Exception {
+        final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        final Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(email);
+
+        if(!matcher.matches()){
+            throw new Exception("Email is not valid");
+        }
     }
 
 }

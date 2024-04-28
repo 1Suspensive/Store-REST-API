@@ -4,13 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.suspensive.store.models.dto.AuthLoginDTO;
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
 import com.suspensive.store.models.entities.RoleEntity;
@@ -40,9 +47,15 @@ public class UserServiceImpl implements IUserService{
     @Autowired
     private IEmailService emailService;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @Override
-    @Transactional
-    public AuthResponseDTO createUser(AuthSignUpUserDTO user) {
+    @Transactional(rollbackOn = Exception.class)
+    public AuthResponseDTO createUser(AuthSignUpUserDTO user) throws Exception {
+
+        emailService.validateEmail(user.email());
+
         Set<RoleEntity> defaultRole = Set.of(roleRepository.findRoleEntityByRolesEnum(RolesEnum.DEFAULT_USER));
         UserEntity newUser = UserEntity.builder()
                              .username(user.username())
@@ -72,6 +85,23 @@ public class UserServiceImpl implements IUserService{
         emailService.sendEmail(userCreated.getEmail(),welcomeMailMessage,welcomeMailSubject);
 
         return new AuthResponseDTO(userCreated.getUsername(), "User created Successfully", token, true);
+    }
+
+    @Override
+    public AuthResponseDTO login(AuthLoginDTO user) throws UsernameNotFoundException{
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.username());
+        if(userDetails == null){
+            throw new BadCredentialsException("Invalid username or password.");
+        }
+
+        if(!passwordEncoder.matches(user.password(), userDetails.getPassword())){
+            throw new BadCredentialsException("Invalid password.");
+        }
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.username(),userDetails.getPassword(),userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtUtils.createToken(authentication);
+        return new AuthResponseDTO(user.username(), "User logged sucessfully.",token , false);
     }
 
 }
