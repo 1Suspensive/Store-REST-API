@@ -3,7 +3,7 @@ package com.suspensive.store;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/* */
+/* 
 import com.suspensive.store.models.entities.PermissionEntity;
 import com.suspensive.store.models.entities.RoleEntity;
 import com.suspensive.store.models.entities.RolesEnum;
@@ -11,8 +11,10 @@ import com.suspensive.store.models.entities.UserEntity;
 import com.suspensive.store.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
-import java.util.Set;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Set;
+*/
 
 
 @SpringBootApplication
@@ -21,9 +23,9 @@ public class StoreApplication{
 	public static void main(String[] args) {
 		SpringApplication.run(StoreApplication.class, args);
 	}
-	/*Code to create admin, roles and permissions by default */
+	/*Code to create admin, roles and permissions by default 
 	@Bean
-	CommandLineRunner init(UserRepository userRepository){
+	CommandLineRunner init(UserRepository userRepository,PasswordEncoder passwordEncoder){
 		return args ->{
 			PermissionEntity permission1 = PermissionEntity.builder().name("READ").build();
 			PermissionEntity permission2 = PermissionEntity.builder().name("DEFAULT_PURCHASE").build();
@@ -36,7 +38,7 @@ public class StoreApplication{
 		
 			UserEntity admin = UserEntity.builder()
 			.username("Jeferson")
-			.password("1234")
+			.password(passwordEncoder.encode("1234"))
 			.email("jefersonospinag@gmail.com")
 			.phoneNumber("3008317482")
 			.wallet(1000000)
@@ -49,5 +51,6 @@ public class StoreApplication{
 			userRepository.save(admin);
 		};
 	}
+	*/
 	
 }

@@ -88,7 +88,7 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
-    public AuthResponseDTO login(AuthLoginDTO user) throws UsernameNotFoundException{
+    public AuthResponseDTO login(AuthLoginDTO user) throws UsernameNotFoundException,BadCredentialsException{
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.username());
         if(userDetails == null){
             throw new BadCredentialsException("Invalid username or password.");
@@ -101,7 +101,7 @@ public class UserServiceImpl implements IUserService{
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.username(),userDetails.getPassword(),userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtUtils.createToken(authentication);
-        return new AuthResponseDTO(user.username(), "User logged sucessfully.",token , false);
+        return new AuthResponseDTO(user.username(), "User logged sucessfully.",token , true);
     }
 
 }

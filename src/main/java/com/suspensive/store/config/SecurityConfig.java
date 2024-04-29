@@ -34,9 +34,15 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(http->{
             //Public Requests
-            http.requestMatchers(HttpMethod.GET,"/hello").permitAll();
+            http.requestMatchers(HttpMethod.GET,"/hello").hasAuthority("READ");
             http.requestMatchers(HttpMethod.POST,"/auth/**").permitAll();
-            http.anyRequest().authenticated();
+
+            //Private Requests
+            http.requestMatchers(HttpMethod.POST,"/add/product").hasAuthority("SELL");
+            http.requestMatchers(HttpMethod.POST,"/add/products").hasAuthority("SELL");
+
+
+            http.anyRequest().denyAll();
         })
         .addFilterBefore(new JwtTokenValidatorFilter(jwtUtils), BasicAuthenticationFilter.class)
         .build();
