@@ -34,13 +34,15 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(http->{
             //Public Requests
-            http.requestMatchers(HttpMethod.GET,"/hello").hasAuthority("READ");
             http.requestMatchers(HttpMethod.POST,"/auth/**").permitAll();
+            http.requestMatchers(HttpMethod.GET,"/products").permitAll();
+            http.requestMatchers(HttpMethod.GET,"/products/filter").permitAll();
 
             //Private Requests
-            http.requestMatchers(HttpMethod.POST,"/add/product").hasAuthority("SELL");
-            http.requestMatchers(HttpMethod.POST,"/add/products").hasAuthority("SELL");
-
+            http.requestMatchers(HttpMethod.POST,"/products/add").hasAuthority("SELL");
+            http.requestMatchers(HttpMethod.POST,"/products/add/productsList").hasAuthority("SELL");
+            http.requestMatchers(HttpMethod.PATCH,"/products/edit/{productId}").hasAuthority("SELL");
+            http.requestMatchers(HttpMethod.DELETE,"products/delete/{productId}").hasRole("ADMIN");
 
             http.anyRequest().denyAll();
         })

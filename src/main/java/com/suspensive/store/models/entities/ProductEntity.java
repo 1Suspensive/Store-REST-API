@@ -19,4 +19,6 @@ public class ProductEntity {
     private float price;
 
     private String category;
+
+    private int stock;
 }
