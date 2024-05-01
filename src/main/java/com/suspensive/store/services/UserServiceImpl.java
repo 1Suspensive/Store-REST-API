@@ -20,9 +20,12 @@ import org.springframework.stereotype.Service;
 import com.suspensive.store.models.dto.AuthLoginDTO;
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
+import com.suspensive.store.models.entities.ProductEntity;
 import com.suspensive.store.models.entities.RoleEntity;
 import com.suspensive.store.models.entities.RolesEnum;
 import com.suspensive.store.models.entities.UserEntity;
+import com.suspensive.store.models.exceptions.ProductNotFoundException;
+import com.suspensive.store.repositories.ProductRepository;
 import com.suspensive.store.repositories.RoleRepository;
 import com.suspensive.store.repositories.UserRepository;
 import com.suspensive.store.util.JwtUtils;
@@ -37,6 +40,9 @@ public class UserServiceImpl implements IUserService{
     
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -102,6 +108,27 @@ public class UserServiceImpl implements IUserService{
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtUtils.createToken(authentication);
         return new AuthResponseDTO(user.username(), "User logged sucessfully.",token , true);
+    }
+
+    @Override
+    @Transactional
+    public ProductEntity addProductToCart(Long productId) throws ProductNotFoundException {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(()-> new UsernameNotFoundException("User could not be found"));
+        ProductEntity product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
+        user.getCart().add(product);
+        userRepository.save(user);
+        return product;
+    }
+
+    @Override
+    @Transactional
+    public ProductEntity deleteCartProduct(Long productId) throws ProductNotFoundException {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        ProductEntity product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
+
+        user.getCart().remove(product);
+        userRepository.save(user);
+        return product;
     }
 
 }

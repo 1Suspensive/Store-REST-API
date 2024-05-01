@@ -3,6 +3,7 @@ package com.suspensive.store.models.entities;
 import java.util.List;
 import java.util.Set;
 
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -20,6 +21,7 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String username;
 
     private String password;
@@ -37,7 +39,7 @@ public class UserEntity {
     @JoinTable(name = "user_adresses",joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="address_id"))
     private Set<AddressEntity> addresses;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(name = "user_cart", joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="product_id"))
     private List<ProductEntity> cart;
 
@@ -45,6 +47,9 @@ public class UserEntity {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="role_id"))
     private Set<RoleEntity> roles;
 
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    private Set<InvoiceEntity> invoices;
+    
     @Column(name = "is_enabled")
     private boolean isEnabled;
 

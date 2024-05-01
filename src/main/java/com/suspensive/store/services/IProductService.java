@@ -11,5 +11,5 @@ public interface IProductService {
     List<ProductEntity> getProducts();
     List<ProductEntity> getProducts(String category);
     ProductEntity editProduct(Long productId,ProductEntity productModified) throws ProductNotFoundException;
-    void deleteProduct(Long productId);
+    void deleteProduct(Long productId) throws ProductNotFoundException;
 }

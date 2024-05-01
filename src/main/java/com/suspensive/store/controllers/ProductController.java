@@ -55,7 +55,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/{productId}")
-    public ResponseEntity<BasicResponseDTO> deleteProduct(@PathVariable Long productId){
+    public ResponseEntity<BasicResponseDTO> deleteProduct(@PathVariable Long productId) throws ProductNotFoundException{
         productService.deleteProduct(productId);
         BasicResponseDTO response = new BasicResponseDTO("Product deleted succesfully.", null);
         return new ResponseEntity<>(response,HttpStatus.OK);

@@ -51,7 +51,9 @@ public class ProductServiceImpl implements IProductService{
     }
 
     @Override
-    public void deleteProduct(Long productId) {
+    @Transactional
+    public void deleteProduct(Long productId) throws ProductNotFoundException {
+        productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
         productRepository.deleteById(productId);
     }
 

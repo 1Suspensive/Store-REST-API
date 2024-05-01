@@ -39,10 +39,17 @@ public class SecurityConfig {
             http.requestMatchers(HttpMethod.GET,"/products/filter").permitAll();
 
             //Private Requests
+            //Store Controller
+            http.requestMatchers(HttpMethod.PATCH,"cart/add/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
+            http.requestMatchers(HttpMethod.PATCH,"cart/delete/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
+
+            //Product Controller
             http.requestMatchers(HttpMethod.POST,"/products/add").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.POST,"/products/add/productsList").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.PATCH,"/products/edit/{productId}").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.DELETE,"products/delete/{productId}").hasRole("ADMIN");
+
+
 
             http.anyRequest().denyAll();
         })
