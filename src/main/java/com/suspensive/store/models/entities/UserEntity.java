@@ -35,7 +35,7 @@ public class UserEntity {
 
     private double wallet;
 
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.REMOVE)
     @JoinTable(name = "user_adresses",joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="address_id"))
     private Set<AddressEntity> addresses;
 

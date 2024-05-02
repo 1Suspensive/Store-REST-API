@@ -20,11 +20,16 @@ import org.springframework.stereotype.Service;
 import com.suspensive.store.models.dto.AuthLoginDTO;
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
+import com.suspensive.store.models.dto.InvoiceDTO;
+import com.suspensive.store.models.entities.AddressEntity;
 import com.suspensive.store.models.entities.ProductEntity;
 import com.suspensive.store.models.entities.RoleEntity;
 import com.suspensive.store.models.entities.RolesEnum;
 import com.suspensive.store.models.entities.UserEntity;
+import com.suspensive.store.models.exceptions.AddressNotFoundException;
+import com.suspensive.store.models.exceptions.InsufficientMoneyException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
+import com.suspensive.store.repositories.AddressRepository;
 import com.suspensive.store.repositories.ProductRepository;
 import com.suspensive.store.repositories.RoleRepository;
 import com.suspensive.store.repositories.UserRepository;
@@ -43,6 +48,9 @@ public class UserServiceImpl implements IUserService{
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -128,7 +136,90 @@ public class UserServiceImpl implements IUserService{
 
         user.getCart().remove(product);
         userRepository.save(user);
+        
         return product;
+    }
+
+    @Override
+    @Transactional
+    public void cleanUpCartItems() {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        user.getCart().removeAll(user.getCart());
+        userRepository.save(user);
+    }
+
+    @Override
+    public InvoiceDTO purchaseCart(){
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+
+        
+
+        return null;
+    }
+
+    public void validatePurchase(UserEntity user) throws InsufficientMoneyException{
+        float totalCost = 0;
+
+        for(ProductEntity product : user.getCart()){
+            totalCost+= product.getPrice();
+        }
+
+        if(totalCost > user.getWallet()){
+            throw new InsufficientMoneyException();
+        }
+
+
+    }
+
+    @Override
+    public Set<AddressEntity> getAddresses() {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        return (Set<AddressEntity>) user.getAddresses();
+    }
+
+    @Override
+    @Transactional
+    public AddressEntity addAddress(AddressEntity address) {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        user.getAddresses().add(address);
+        userRepository.save(user);
+        return address;
+    }
+
+    @Override
+    @Transactional
+    public AddressEntity deleteAddress(Long addressId) throws AddressNotFoundException {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(()-> new AddressNotFoundException());
+
+        user.getAddresses().remove(address);
+
+        return address;
+    }
+
+    @Override
+    @Transactional
+    public AddressEntity editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
+        boolean addressFound = false;
+
+        for(AddressEntity address: user.getAddresses()){
+            if(address.getId().equals(addressId)){
+                address.setCountry(newAddress.getCountry());
+                address.setAddress(newAddress.getAddress());
+                address.setCity(newAddress.getCity());
+                address.setZipCode(newAddress.getZipCode());
+                addressFound = true;
+                break;
+            }
+        }
+
+        if(addressFound == false){
+            throw new AddressNotFoundException();
+        }
+
+        userRepository.save(user);
+        return newAddress;
     }
 
 }

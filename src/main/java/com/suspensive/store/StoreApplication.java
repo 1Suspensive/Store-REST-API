@@ -23,7 +23,7 @@ public class StoreApplication{
 	public static void main(String[] args) {
 		SpringApplication.run(StoreApplication.class, args);
 	}
-	// /*Code to create admin, roles and permissions by default */
+	/*Code to create admin, roles and permissions by default */
 	// @Bean
 	// CommandLineRunner init(UserRepository userRepository,PasswordEncoder passwordEncoder){
 	// 	return args ->{
