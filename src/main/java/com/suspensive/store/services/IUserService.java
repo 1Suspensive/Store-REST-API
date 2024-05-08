@@ -9,6 +9,8 @@ import com.suspensive.store.models.dto.InvoiceDTO;
 import com.suspensive.store.models.entities.AddressEntity;
 import com.suspensive.store.models.entities.ProductEntity;
 import com.suspensive.store.models.exceptions.AddressNotFoundException;
+import com.suspensive.store.models.exceptions.InsufficientMoneyException;
+import com.suspensive.store.models.exceptions.PremiumProductException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
 
 public interface IUserService {
@@ -23,8 +25,8 @@ public interface IUserService {
     AddressEntity editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException;
 
     //Cart Services
-    ProductEntity addProductToCart(Long productId) throws ProductNotFoundException;
+    ProductEntity addProductToCart(Long productId) throws ProductNotFoundException,PremiumProductException ;
     ProductEntity deleteCartProduct(Long productId) throws ProductNotFoundException;
     void cleanUpCartItems();
-    InvoiceDTO purchaseCart();
+    InvoiceDTO purchaseCart(Long addressId) throws AddressNotFoundException,InsufficientMoneyException;
 }

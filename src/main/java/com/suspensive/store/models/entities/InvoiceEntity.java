@@ -24,7 +24,7 @@ public class InvoiceEntity {
     @JoinColumn(name = "address_id")
     private AddressEntity address;
 
-    private final String taxes = "19%";
+    private final double taxes = 0.19;
     
     @Column(name = "total_cost")
     private double totalCost;

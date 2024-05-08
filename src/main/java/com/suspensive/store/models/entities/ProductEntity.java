@@ -21,4 +21,6 @@ public class ProductEntity {
     private String category;
 
     private int stock;
+
+    private boolean premium;
 }

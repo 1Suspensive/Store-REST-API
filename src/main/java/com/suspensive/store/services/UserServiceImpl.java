@@ -22,12 +22,14 @@ import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
 import com.suspensive.store.models.dto.InvoiceDTO;
 import com.suspensive.store.models.entities.AddressEntity;
+import com.suspensive.store.models.entities.InvoiceEntity;
 import com.suspensive.store.models.entities.ProductEntity;
 import com.suspensive.store.models.entities.RoleEntity;
 import com.suspensive.store.models.entities.RolesEnum;
 import com.suspensive.store.models.entities.UserEntity;
 import com.suspensive.store.models.exceptions.AddressNotFoundException;
 import com.suspensive.store.models.exceptions.InsufficientMoneyException;
+import com.suspensive.store.models.exceptions.PremiumProductException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
 import com.suspensive.store.repositories.AddressRepository;
 import com.suspensive.store.repositories.ProductRepository;
@@ -40,30 +42,31 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserServiceImpl implements IUserService{
 
+    
     @Autowired
     private UserRepository userRepository;
     
     @Autowired
     private RoleRepository roleRepository;
-
+    
     @Autowired
     private ProductRepository productRepository;
-
+    
     @Autowired
     private AddressRepository addressRepository;
-
+    
     @Autowired
     private JwtUtils jwtUtils;
-
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    
     @Autowired
     private IEmailService emailService;
-
+    
     @Autowired
     private UserDetailsService userDetailsService;
-
+    
     @Override
     @Transactional(rollbackOn = Exception.class)
     public AuthResponseDTO createUser(AuthSignUpUserDTO user) throws Exception {
@@ -120,9 +123,12 @@ public class UserServiceImpl implements IUserService{
 
     @Override
     @Transactional
-    public ProductEntity addProductToCart(Long productId) throws ProductNotFoundException {
+    public ProductEntity addProductToCart(Long productId) throws ProductNotFoundException, PremiumProductException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(()-> new UsernameNotFoundException("User could not be found"));
         ProductEntity product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
+        if(product.isPremium() && !(user.getRoles().contains(roleRepository.findRoleEntityByRolesEnum(RolesEnum.PREMIUM_USER)))){
+            throw new PremiumProductException();
+        }
         user.getCart().add(product);
         userRepository.save(user);
         return product;
@@ -149,27 +155,57 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
-    public InvoiceDTO purchaseCart(){
+    @Transactional
+    public InvoiceDTO purchaseCart(Long addressId) throws AddressNotFoundException,InsufficientMoneyException{
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
 
-        
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(()-> new AddressNotFoundException());
 
-        return null;
+        if(!user.getAddresses().contains(address)){
+            throw new AddressNotFoundException();
+        }
+
+        double totalCost = this.validatePurchase(user);
+
+        //If user is premium, then there is a discount
+        if(user.getRoles().contains(roleRepository.findRoleEntityByRolesEnum(RolesEnum.PREMIUM_USER))){
+            totalCost -= totalCost*0.1;
+        }
+
+        InvoiceEntity invoice = new InvoiceEntity();
+        //We add taxes
+        totalCost += totalCost*invoice.getTaxes();
+
+        //We remove a product from its stack
+        user.getCart().forEach(product-> product.setStock(product.getStock()-1));
+
+        invoice.setAddress(address);
+        invoice.setTotalCost(totalCost);
+        invoice.setCart(user.getCart());
+
+        user.getInvoices().add(invoice);
+
+        userRepository.save(user);
+
+        //Sending email..
+        final String purchaseMessage = "Purchase done correctly";
+        final String purchaseMailSubject = "Thanks for choosing us, you have done a purchase.";
+
+        emailService.sendEmail(user.getEmail(),purchaseMessage,purchaseMailSubject);
+
+        return new InvoiceDTO(user.getUsername(), user.getEmail(), user.getPhoneNumber(),address, invoice.getCart(), (invoice.getTaxes()*100) +"%" , totalCost);
     }
 
-    public void validatePurchase(UserEntity user) throws InsufficientMoneyException{
-        float totalCost = 0;
-
-        for(ProductEntity product : user.getCart()){
-            totalCost+= product.getPrice();
-        }
+    public double validatePurchase(UserEntity user) throws InsufficientMoneyException{
+        double totalCost = user.getCart().stream().mapToDouble(ProductEntity::getPrice).sum();
 
         if(totalCost > user.getWallet()){
             throw new InsufficientMoneyException();
         }
 
-
+        return totalCost;
     }
+
 
     @Override
     public Set<AddressEntity> getAddresses() {

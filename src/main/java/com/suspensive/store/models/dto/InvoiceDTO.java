@@ -7,13 +7,12 @@ import com.suspensive.store.models.entities.AddressEntity;
 import com.suspensive.store.models.entities.ProductEntity;
 
 @JsonPropertyOrder({"id","username","email","phoneNumber","address","cart","taxes","totalCost"})
-public record InvoiceDTO(Long id,
-                         String username,
+public record InvoiceDTO(String username,
                          String email,
                          String phoneNumber,
                          AddressEntity address,
                          List<ProductEntity> cart,
                          String taxes,
-                         double totalCost) {
+                         double totalCost) {    
 
 }

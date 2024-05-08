@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.suspensive.store.models.dto.BasicResponseDTO;
 import com.suspensive.store.models.exceptions.AddressNotFoundException;
 import com.suspensive.store.models.exceptions.InsufficientMoneyException;
+import com.suspensive.store.models.exceptions.PremiumProductException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
 
 @RestControllerAdvice
@@ -26,6 +27,12 @@ public class ExceptionController {
     @ExceptionHandler({InsufficientMoneyException.class})
     public ResponseEntity<BasicResponseDTO> insufficientMoney(){
         BasicResponseDTO response = new BasicResponseDTO("You don't have enough money", null);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler({PremiumProductException.class})
+    public ResponseEntity<BasicResponseDTO> premiumProduct(){
+        BasicResponseDTO response = new BasicResponseDTO("This product can be only added to cart by premium users", null);
         return ResponseEntity.badRequest().body(response);
     }
 }
