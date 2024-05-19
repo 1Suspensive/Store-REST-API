@@ -1,0 +1,45 @@
+services:
+  store_app:
+    container_name: store_app
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      - DATABASE_URL=jdbc:mysql://store_db:3306/spring-store
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=12345678
+      - JWT_KEY=3fe9545f11d5fc24be4bf8f72abf187e422b07f87f5a11f0d1ba9f7adf773f7c
+      - JWT_USER=SUSPENSIVEJWT-BACKEND
+      - MAIL_USERNAME=suspensive3@gmail.com
+      - MAIL_PASSWORD=gnns ecua rivk xklb
+    depends_on:
+      - store_db
+    links:
+      - store_db
+
+  store_db:
+    container_name: store_db
+    image: mysql
+    ports:
+      - 3306:3306
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: spring-store
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - 8081:80
+    environment:
+      PMA_HOST: store_db
+      PMA_USER: root
+      PMA_PASSWORD: 12345678
+    depends_on:
+      - store_db
+      
+volumes:
+  mysql-data:
