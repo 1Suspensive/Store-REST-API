@@ -28,18 +28,6 @@ services:
       MYSQL_DATABASE: spring-store
     volumes:
       - mysql-data:/var/lib/mysql
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    ports:
-      - 8081:80
-    environment:
-      PMA_HOST: store_db
-      PMA_USER: root
-      PMA_PASSWORD: 12345678
-    depends_on:
-      - store_db
       
 volumes:
   mysql-data:

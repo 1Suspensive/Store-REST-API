@@ -1,6 +1,7 @@
 package com.suspensive.store.controllers;
 
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.suspensive.store.models.dto.BasicResponseDTO;
 import com.suspensive.store.models.entities.AddressEntity;
+import com.suspensive.store.models.entities.ProductCartEntity;
 import com.suspensive.store.models.exceptions.AddressNotFoundException;
 import com.suspensive.store.models.exceptions.InsufficientMoneyException;
 import com.suspensive.store.models.exceptions.PremiumProductException;
@@ -51,9 +53,20 @@ public class StoreController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    @GetMapping("cart")
+    public List<ProductCartEntity> getCartProducts(){
+        return userService.getCartProducts();
+    }
+
     @PatchMapping("cart/add/{productId}")
-    public ResponseEntity<BasicResponseDTO> addProductToCart(@PathVariable Long productId) throws ProductNotFoundException, PremiumProductException{
-        BasicResponseDTO response = new BasicResponseDTO("Product added to cart.", userService.addProductToCart(productId));
+    public ResponseEntity<BasicResponseDTO> addProductToCart(@PathVariable Long productId, @RequestParam int quantity) throws ProductNotFoundException, PremiumProductException{
+        BasicResponseDTO response = new BasicResponseDTO("Product added to cart.", userService.addProductToCart(productId,quantity));
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PatchMapping("cart/edit/{productId}")
+    public ResponseEntity<BasicResponseDTO> editProductCart(@PathVariable Long productId, @RequestParam int quantity) throws ProductNotFoundException{
+        BasicResponseDTO response = new BasicResponseDTO("Product edited succesfully.", userService.editCartProduct(productId,quantity));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 

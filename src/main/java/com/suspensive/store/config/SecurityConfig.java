@@ -40,9 +40,12 @@ public class SecurityConfig {
 
             //Private Requests
             //Store Controller
+            http.requestMatchers(HttpMethod.GET,"/cart").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
             http.requestMatchers(HttpMethod.PATCH,"/cart/add/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
+            http.requestMatchers(HttpMethod.PATCH,"/cart/edit/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
             http.requestMatchers(HttpMethod.PATCH,"/cart/delete/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
             http.requestMatchers(HttpMethod.PATCH,"/cart/clean-up").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
+            http.requestMatchers(HttpMethod.PATCH,"/cart/purchase").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
 
             //Addresses Requests
             http.requestMatchers(HttpMethod.GET,"/addresses").hasAnyRole("DEFAULT_USER", "PREMIUM_USER");
@@ -54,7 +57,7 @@ public class SecurityConfig {
             http.requestMatchers(HttpMethod.POST,"/products/add").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.POST,"/products/add/productsList").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.PATCH,"/products/edit/{productId}").hasAuthority("SELL");
-            http.requestMatchers(HttpMethod.DELETE,"products/delete/{productId}").hasRole("ADMIN");
+            http.requestMatchers(HttpMethod.DELETE,"/products/delete/{productId}").hasRole("ADMIN");
 
 
 

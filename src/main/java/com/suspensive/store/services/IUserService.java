@@ -1,13 +1,16 @@
 package com.suspensive.store.services;
 
+import java.util.List;
 import java.util.Set;
+
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.suspensive.store.models.dto.AuthLoginDTO;
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
 import com.suspensive.store.models.dto.InvoiceDTO;
 import com.suspensive.store.models.entities.AddressEntity;
-import com.suspensive.store.models.entities.ProductEntity;
+import com.suspensive.store.models.entities.ProductCartEntity;
 import com.suspensive.store.models.exceptions.AddressNotFoundException;
 import com.suspensive.store.models.exceptions.InsufficientMoneyException;
 import com.suspensive.store.models.exceptions.PremiumProductException;
@@ -25,8 +28,11 @@ public interface IUserService {
     AddressEntity editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException;
 
     //Cart Services
-    ProductEntity addProductToCart(Long productId) throws ProductNotFoundException,PremiumProductException ;
-    ProductEntity deleteCartProduct(Long productId) throws ProductNotFoundException;
+    List<ProductCartEntity> getCartProducts();
+    ProductCartEntity addProductToCart(Long productId,int quantity) throws ProductNotFoundException,PremiumProductException ;
+    ProductCartEntity editCartProduct(Long productCartId, int quantity) throws ProductNotFoundException;
+    ProductCartEntity deleteCartProduct(Long productCartId) throws UsernameNotFoundException,ProductNotFoundException;
+
     void cleanUpCartItems();
     InvoiceDTO purchaseCart(Long addressId) throws AddressNotFoundException,InsufficientMoneyException;
 }
