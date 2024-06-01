@@ -16,9 +16,11 @@ public class ProductCartEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.EAGER,cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
     private int quantity;
+
+    private boolean bought;
 }

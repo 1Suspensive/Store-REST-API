@@ -58,7 +58,7 @@ public class UserServiceImpl implements IUserService{
 
     @Autowired
     private ProductCartRepository productCartRepository;
-    
+
     @Autowired
     private JwtUtils jwtUtils;
     
@@ -193,16 +193,21 @@ public class UserServiceImpl implements IUserService{
         //We add taxes
         totalCost += totalCost*invoice.getTaxes();
 
+        invoice.setUser(user);
         invoice.setAddress(address);
         invoice.setTotalCost(totalCost);
-        invoice.setCart(user.getCart());
+        invoice.setCart(user.getCart().stream().filter(product -> !product.isBought()).toList());
         
         //We remove products from its stock
-        user.getCart().forEach(product-> product.getProduct().setStock(product.getProduct().getStock()-(1*product.getQuantity())));
+ 
+        user.getCart().stream().filter(product -> product.isBought() == false).forEach(product->{
+                                            product.getProduct().setStock(product.getProduct().getStock()-(1*product.getQuantity()));
+                                            product.setBought(true);
+                                        });
+
+        user.setWallet(user.getWallet()-totalCost);
 
         user.getInvoices().add(invoice);
-
-        user.getCart().removeAll(user.getCart());
 
         userRepository.save(user);
 
@@ -281,7 +286,7 @@ public class UserServiceImpl implements IUserService{
     @Override
     public List<ProductCartEntity> getCartProducts() {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
-        return user.getCart();
+        return user.getCart().stream().filter(product -> product.isBought()==false).toList();
     }
 
 }

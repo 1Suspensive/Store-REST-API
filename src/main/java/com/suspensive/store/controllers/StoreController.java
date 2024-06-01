@@ -85,6 +85,7 @@ public class StoreController {
     @PatchMapping("/cart/purchase")
     public ResponseEntity<BasicResponseDTO> purchaseCart(@RequestParam Long addressId) throws AddressNotFoundException, InsufficientMoneyException{
         BasicResponseDTO response = new BasicResponseDTO("Cart purchased correctly", userService.purchaseCart(addressId));
+        userService.cleanUpCartItems();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

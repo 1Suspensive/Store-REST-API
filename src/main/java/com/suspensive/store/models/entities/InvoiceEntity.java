@@ -20,7 +20,7 @@ public class InvoiceEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToOne(fetch=FetchType.EAGER,targetEntity = AddressEntity.class,cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @ManyToOne(fetch=FetchType.EAGER,targetEntity = AddressEntity.class,cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinColumn(name = "address_id")
     private AddressEntity address;
 
@@ -29,7 +29,7 @@ public class InvoiceEntity {
     @Column(name = "total_cost")
     private double totalCost;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinTable(name = "invoice_cart", joinColumns = @JoinColumn(name="invoice_id"),inverseJoinColumns = @JoinColumn(name="product_cart_id"))
     private List<ProductCartEntity> cart;
 }
