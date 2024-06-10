@@ -1,6 +1,5 @@
 package com.suspensive.store.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,6 +9,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,24 +19,26 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import com.suspensive.store.config.filter.JwtTokenValidatorFilter;
 import com.suspensive.store.services.UserDetailsServiceImpl;
 import com.suspensive.store.util.JwtUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
-
-    @Autowired
-    private JwtUtils jwtUtils;
+public class SecurityConfig{
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtUtils jwtUtils) throws Exception{
         return httpSecurity
-        .csrf(crsf -> crsf.disable())
+        .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(http->{
             //Public Requests
             http.requestMatchers(HttpMethod.POST,"/auth/**").permitAll();
             http.requestMatchers(HttpMethod.GET,"/products").permitAll();
             http.requestMatchers(HttpMethod.GET,"/products/filter").permitAll();
+            http.requestMatchers("swagger-ui/**","v3/api-docs/**").permitAll();
 
             //Private Requests
             //Store Controller
@@ -58,7 +60,6 @@ public class SecurityConfig {
             http.requestMatchers(HttpMethod.POST,"/products/add/productsList").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.PATCH,"/products/edit/{productId}").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.DELETE,"/products/delete/{productId}").hasRole("ADMIN");
-
 
 
             http.anyRequest().denyAll();
@@ -84,7 +85,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-
 
 
 }

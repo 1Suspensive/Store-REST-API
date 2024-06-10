@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtTokenValidatorFilter extends OncePerRequestFilter{
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     public JwtTokenValidatorFilter(JwtUtils jwtUtils){
         this.jwtUtils = jwtUtils;
