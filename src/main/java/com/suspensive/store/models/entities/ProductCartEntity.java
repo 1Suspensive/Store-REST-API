@@ -1,4 +1,5 @@
 package com.suspensive.store.models.entities;
+import com.suspensive.store.models.interfaces.IPrototype;
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -11,7 +12,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "products_cart")
 
-public class ProductCartEntity {
+public class ProductCartEntity implements IPrototype<ProductCartEntity> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,5 +23,8 @@ public class ProductCartEntity {
 
     private int quantity;
 
-    private boolean bought;
+    @Override
+    public ProductCartEntity clone() {
+        return new ProductCartEntity(null, product, quantity);
+    }
 }

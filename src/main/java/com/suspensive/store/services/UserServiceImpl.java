@@ -3,7 +3,9 @@ package com.suspensive.store.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.suspensive.store.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,11 +33,6 @@ import com.suspensive.store.models.exceptions.AddressNotFoundException;
 import com.suspensive.store.models.exceptions.InsufficientMoneyException;
 import com.suspensive.store.models.exceptions.PremiumProductException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
-import com.suspensive.store.repositories.AddressRepository;
-import com.suspensive.store.repositories.ProductCartRepository;
-import com.suspensive.store.repositories.ProductRepository;
-import com.suspensive.store.repositories.RoleRepository;
-import com.suspensive.store.repositories.UserRepository;
 import com.suspensive.store.util.JwtUtils;
 
 import jakarta.transaction.Transactional;
@@ -44,32 +41,38 @@ import jakarta.transaction.Transactional;
 public class UserServiceImpl implements IUserService{
 
     
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
     
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
     
-    @Autowired
-    private AddressRepository addressRepository;
+    private final AddressRepository addressRepository;
 
-    @Autowired
-    private ProductCartRepository productCartRepository;
+    private final ProductCartRepository productCartRepository;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
     
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     
-    @Autowired
-    private IEmailService emailService;
+    private final IEmailService emailService;
     
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
+
+    private final InvoiceRepository invoiceRepository;
+
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ProductRepository productRepository, AddressRepository addressRepository, ProductCartRepository productCartRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, IEmailService emailService, UserDetailsService userDetailsService, InvoiceRepository invoiceRepository){
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.productRepository = productRepository;
+        this.addressRepository = addressRepository;
+        this.productCartRepository = productCartRepository;
+        this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.userDetailsService = userDetailsService;
+        this.invoiceRepository = invoiceRepository;
+    }
     
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -129,7 +132,7 @@ public class UserServiceImpl implements IUserService{
     @Transactional
     public ProductCartEntity addProductToCart(Long productId, int quantity) throws ProductNotFoundException, PremiumProductException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(()-> new UsernameNotFoundException("User could not be found"));
-        ProductEntity product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
+        ProductEntity product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
         if(product.isPremium() && !(user.getRoles().contains(roleRepository.findRoleEntityByRolesEnum(RolesEnum.PREMIUM_USER)))){
             throw new PremiumProductException();
         }
@@ -176,7 +179,7 @@ public class UserServiceImpl implements IUserService{
     public InvoiceDTO purchaseCart(Long addressId) throws AddressNotFoundException,InsufficientMoneyException{
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
 
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(()-> new AddressNotFoundException());
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(AddressNotFoundException::new);
 
         if(!user.getAddresses().contains(address)){
             throw new AddressNotFoundException();
@@ -189,21 +192,23 @@ public class UserServiceImpl implements IUserService{
             totalCost -= totalCost*0.1;
         }
 
-        InvoiceEntity invoice = new InvoiceEntity();
-        //We add taxes
-        totalCost += totalCost*invoice.getTaxes();
+        totalCost += totalCost*InvoiceEntity.taxes;
 
-        invoice.setUser(user);
-        invoice.setAddress(address);
-        invoice.setTotalCost(totalCost);
-        invoice.setCart(user.getCart().stream().filter(product -> !product.isBought()).toList());
-        
+        InvoiceEntity invoice = InvoiceEntity.builder()
+                .user(user)
+                .address(address)
+                .totalCost(totalCost)
+                .cart(user.getCart().stream().map(ProductCartEntity::clone).toList())
+                .build();
+
         //We remove products from its stock
- 
-        user.getCart().stream().filter(product -> product.isBought() == false).forEach(product->{
-                                            product.getProduct().setStock(product.getProduct().getStock()-(1*product.getQuantity()));
-                                            product.setBought(true);
-                                        });
+
+        user.getCart().forEach(product -> product.getProduct().setStock(product.getProduct().getStock()-(product.getQuantity())));
+
+
+        deleteCartProductsFromRepository(user.getCart());
+
+        user.getCart().clear();
 
         user.setWallet(user.getWallet()-totalCost);
 
@@ -217,10 +222,15 @@ public class UserServiceImpl implements IUserService{
 
         emailService.sendEmail(user.getEmail(),purchaseMessage,purchaseMailSubject);
 
-        return new InvoiceDTO(user.getUsername(), user.getEmail(), user.getPhoneNumber(),address, invoice.getCart(), (invoice.getTaxes()*100) +"%" , totalCost);
+        return new InvoiceDTO(user.getUsername(), user.getEmail(), user.getPhoneNumber(),address, invoice.getCart(), (InvoiceEntity.taxes*100) +"%" , totalCost);
     }
 
-    public double validatePurchase(UserEntity user) throws InsufficientMoneyException{
+    @Transactional
+    public void deleteCartProductsFromRepository(List<ProductCartEntity> cart){
+        productCartRepository.deleteAllById(cart.stream().map(ProductCartEntity::getId).toList());
+    }
+
+    private double validatePurchase(UserEntity user) throws InsufficientMoneyException{
         double totalCost = user.getCart().stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
 
         if(totalCost > user.getWallet()){
@@ -230,11 +240,11 @@ public class UserServiceImpl implements IUserService{
         return totalCost;
     }
 
-
     @Override
+    @Transactional
     public Set<AddressEntity> getAddresses() {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
-        return (Set<AddressEntity>) user.getAddresses();
+        return user.getAddresses();
     }
 
     @Override
@@ -251,7 +261,7 @@ public class UserServiceImpl implements IUserService{
     @Transactional
     public AddressEntity deleteAddress(Long addressId) throws AddressNotFoundException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(()-> new AddressNotFoundException());
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(AddressNotFoundException::new);
 
         user.getAddresses().remove(address);
 
@@ -275,7 +285,7 @@ public class UserServiceImpl implements IUserService{
             }
         }
 
-        if(addressFound == false){
+        if(!addressFound){
             throw new AddressNotFoundException();
         }
 
@@ -286,7 +296,7 @@ public class UserServiceImpl implements IUserService{
     @Override
     public List<ProductCartEntity> getCartProducts() {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
-        return user.getCart().stream().filter(product -> product.isBought()==false).toList();
+        return user.getCart();
     }
 
 }

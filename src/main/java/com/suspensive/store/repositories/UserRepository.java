@@ -10,4 +10,5 @@ import com.suspensive.store.models.entities.UserEntity;
 @Repository
 public interface UserRepository extends CrudRepository<UserEntity,Long>{
     Optional<UserEntity> findUserEntityByUsername(String username);
+
 }
