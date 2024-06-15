@@ -6,7 +6,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.suspensive.store.repositories.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.suspensive.store.services.interfaces.IAddressService;
+import com.suspensive.store.services.interfaces.ICartService;
+import com.suspensive.store.services.interfaces.IEmailService;
+import com.suspensive.store.services.interfaces.IUserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,7 +41,7 @@ import com.suspensive.store.util.JwtUtils;
 import jakarta.transaction.Transactional;
 
 @Service
-public class UserServiceImpl implements IUserService{
+public class UserServiceImpl implements IUserService, ICartService, IAddressService {
 
     
     private final UserRepository userRepository;
@@ -59,9 +62,8 @@ public class UserServiceImpl implements IUserService{
     
     private final UserDetailsService userDetailsService;
 
-    private final InvoiceRepository invoiceRepository;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ProductRepository productRepository, AddressRepository addressRepository, ProductCartRepository productCartRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, IEmailService emailService, UserDetailsService userDetailsService, InvoiceRepository invoiceRepository){
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ProductRepository productRepository, AddressRepository addressRepository, ProductCartRepository productCartRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, IEmailService emailService, UserDetailsService userDetailsService){
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.productRepository = productRepository;
@@ -71,7 +73,6 @@ public class UserServiceImpl implements IUserService{
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.userDetailsService = userDetailsService;
-        this.invoiceRepository = invoiceRepository;
     }
     
     @Override
@@ -126,6 +127,12 @@ public class UserServiceImpl implements IUserService{
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtUtils.createToken(authentication);
         return new AuthResponseDTO(user.username(), "User logged sucessfully.",token , true);
+    }
+
+    @Override
+    public Set<InvoiceDTO> getInvoices() {
+        UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(()-> new UsernameNotFoundException("User could not be found"));
+        return user.getInvoices().stream().map(invoice -> new InvoiceDTO(user.getUsername(), user.getEmail(), user.getPhoneNumber(),invoice.getAddress(), invoice.getCart(), (InvoiceEntity.taxes*100) +"%" , invoice.getTotalCost())).collect(Collectors.toSet());
     }
 
     @Override
@@ -204,7 +211,6 @@ public class UserServiceImpl implements IUserService{
         //We remove products from its stock
 
         user.getCart().forEach(product -> product.getProduct().setStock(product.getProduct().getStock()-(product.getQuantity())));
-
 
         deleteCartProductsFromRepository(user.getCart());
 
@@ -294,6 +300,7 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
+    @Transactional
     public List<ProductCartEntity> getCartProducts() {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         return user.getCart();

@@ -1,6 +1,5 @@
 package com.suspensive.store.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.suspensive.store.models.dto.AuthLoginDTO;
 import com.suspensive.store.models.dto.AuthResponseDTO;
 import com.suspensive.store.models.dto.AuthSignUpUserDTO;
-import com.suspensive.store.services.IUserService;
+import com.suspensive.store.services.interfaces.IUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,8 +28,11 @@ import jakarta.validation.Valid;
 )
 public class AuthenticationController {
     
-    @Autowired
-    private IUserService userService;
+    private final IUserService userService;
+
+    public AuthenticationController(IUserService userService) {
+        this.userService = userService;
+    }
 
     @Operation(
         summary = "Sign up user",
@@ -50,7 +52,7 @@ public class AuthenticationController {
             )
         ),
         responses = @ApiResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "Successful authentication",
             content = @Content(
                 mediaType = "application/json",

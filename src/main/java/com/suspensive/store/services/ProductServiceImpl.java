@@ -2,7 +2,7 @@ package com.suspensive.store.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.suspensive.store.services.interfaces.IProductService;
 import org.springframework.stereotype.Service;
 
 import com.suspensive.store.models.entities.ProductEntity;
@@ -12,10 +12,13 @@ import com.suspensive.store.repositories.ProductRepository;
 import jakarta.transaction.Transactional;
 
 @Service
-public class ProductServiceImpl implements IProductService{
+public class ProductServiceImpl implements IProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
+    public ProductServiceImpl(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     @Override
     @Transactional
@@ -37,7 +40,7 @@ public class ProductServiceImpl implements IProductService{
     @Override
     @Transactional
     public ProductEntity editProduct(Long productId, ProductEntity productModified) throws ProductNotFoundException {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
+        ProductEntity product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
         product.setName(productModified.getName());
         product.setPrice(productModified.getPrice());
         product.setStock(productModified.getStock());
@@ -53,7 +56,8 @@ public class ProductServiceImpl implements IProductService{
     @Override
     @Transactional
     public void deleteProduct(Long productId) throws ProductNotFoundException {
-        productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException());
+        //This line tests if product exists
+        productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
         productRepository.deleteById(productId);
     }
 

@@ -3,6 +3,7 @@ package com.suspensive.store.services;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.suspensive.store.services.interfaces.IEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -10,7 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailServiceImpl implements IEmailService{
+public class EmailServiceImpl implements IEmailService {
 
     @Value("${java.mail.sender.username}")
     private String mailUsername;

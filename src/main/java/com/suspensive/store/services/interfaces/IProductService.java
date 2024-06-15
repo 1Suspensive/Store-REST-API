@@ -1,4 +1,4 @@
-package com.suspensive.store.services;
+package com.suspensive.store.services.interfaces;
 
 import java.util.List;
 

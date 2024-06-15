@@ -41,7 +41,10 @@ public class SecurityConfig{
             http.requestMatchers("swagger-ui/**","v3/api-docs/**").permitAll();
 
             //Private Requests
-            //Store Controller
+
+            /*Store Controller*/
+
+            //Cart Requests
             http.requestMatchers(HttpMethod.GET,"/cart").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
             http.requestMatchers(HttpMethod.PATCH,"/cart/add/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
             http.requestMatchers(HttpMethod.PATCH,"/cart/edit/{productId}").hasAnyAuthority("DEFAULT_PURCHASE","PREMIUM_PURCHASE");
@@ -55,12 +58,14 @@ public class SecurityConfig{
             http.requestMatchers(HttpMethod.PATCH,"/addresses/delete/{addressId}").hasAnyRole("DEFAULT_USER", "PREMIUM_USER");
             http.requestMatchers(HttpMethod.PATCH,"/addresses/edit/{addressId}").hasAnyRole("DEFAULT_USER", "PREMIUM_USER");
 
-            //Product Controller
+            //Product Requests
             http.requestMatchers(HttpMethod.POST,"/products/add").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.POST,"/products/add/productsList").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.PATCH,"/products/edit/{productId}").hasAuthority("SELL");
             http.requestMatchers(HttpMethod.DELETE,"/products/delete/{productId}").hasRole("ADMIN");
 
+            //Invoice Requests
+            http.requestMatchers(HttpMethod.GET,"/invoices").hasAnyRole("ADMIN","PREMIUM_USER","DEFAULT_USER");
 
             http.anyRequest().denyAll();
         })

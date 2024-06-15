@@ -9,8 +9,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springdoc.core.converters.ResponseSupportConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.suspensive.store.models.dto.BasicResponseDTO;
 import com.suspensive.store.models.entities.ProductEntity;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
-import com.suspensive.store.services.IProductService;
+import com.suspensive.store.services.interfaces.IProductService;
 
 @RestController
 @RequestMapping("/products")
@@ -35,8 +33,12 @@ import com.suspensive.store.services.IProductService;
        description = "Controller to handle products"
 )
 public class ProductController {
-    @Autowired
-    private IProductService productService;
+
+    private final IProductService productService;
+
+    public ProductController(IProductService productService) {
+        this.productService = productService;
+    }
 
     @Operation(summary = "Get store products",
             description = "This method returns the store products along their details",
