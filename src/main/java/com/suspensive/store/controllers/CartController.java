@@ -8,7 +8,6 @@ import com.suspensive.store.models.exceptions.InsufficientMoneyException;
 import com.suspensive.store.models.exceptions.PremiumProductException;
 import com.suspensive.store.models.exceptions.ProductNotFoundException;
 import com.suspensive.store.services.UserServiceImpl;
-import com.suspensive.store.services.interfaces.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
