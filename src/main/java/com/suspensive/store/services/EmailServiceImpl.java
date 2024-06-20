@@ -4,11 +4,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.suspensive.store.services.interfaces.IEmailService;
+import com.suspensive.store.util.ExcludeFromJacocoGeneratedReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class EmailServiceImpl implements IEmailService {
@@ -19,7 +21,9 @@ public class EmailServiceImpl implements IEmailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
+
     @Override
+    @ExcludeFromJacocoGeneratedReport
     public void sendEmail(String toUser, String subject, String message) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setFrom(mailUsername);

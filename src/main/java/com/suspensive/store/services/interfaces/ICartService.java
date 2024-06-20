@@ -14,8 +14,8 @@ public interface ICartService {
     List<ProductCartEntity> getCartProducts();
     ProductCartEntity addProductToCart(Long productId,int quantity) throws ProductNotFoundException, PremiumProductException;
     ProductCartEntity editCartProduct(Long productCartId, int quantity) throws ProductNotFoundException;
-    ProductCartEntity deleteCartProduct(Long productCartId) throws UsernameNotFoundException,ProductNotFoundException;
+    List<ProductCartEntity> deleteCartProduct(Long productCartId) throws UsernameNotFoundException,ProductNotFoundException;
 
-    void cleanUpCartItems();
+    List<ProductCartEntity> cleanUpCartItems();
     InvoiceDTO purchaseCart(Long addressId) throws AddressNotFoundException, InsufficientMoneyException;
 }

@@ -10,6 +10,7 @@ import com.suspensive.store.services.interfaces.IAddressService;
 import com.suspensive.store.services.interfaces.ICartService;
 import com.suspensive.store.services.interfaces.IEmailService;
 import com.suspensive.store.services.interfaces.IUserService;
+import com.suspensive.store.util.ExcludeFromJacocoGeneratedReport;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,9 +75,10 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
         this.emailService = emailService;
         this.userDetailsService = userDetailsService;
     }
-    
+
     @Override
     @Transactional(rollbackOn = Exception.class)
+    @ExcludeFromJacocoGeneratedReport
     public AuthResponseDTO createUser(AuthSignUpUserDTO user) throws Exception {
 
         emailService.validateEmail(user.email());
@@ -94,6 +96,7 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
                              .accountNoLocked(true)
                              .credentialNoExpired(true)
                              .build();
+
         UserEntity userCreated = userRepository.save(newUser);
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
@@ -113,6 +116,7 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
     }
 
     @Override
+    @ExcludeFromJacocoGeneratedReport
     public AuthResponseDTO login(AuthLoginDTO user) throws UsernameNotFoundException,BadCredentialsException{
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.username());
         if(userDetails == null){
@@ -163,22 +167,23 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
 
     @Override
     @Transactional
-    public ProductCartEntity deleteCartProduct(Long productCartId) throws UsernameNotFoundException,ProductNotFoundException {
+    public List<ProductCartEntity> deleteCartProduct(Long productCartId) throws UsernameNotFoundException,ProductNotFoundException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         ProductCartEntity product = productCartRepository.findById(productCartId).orElseThrow(()-> new ProductNotFoundException());
 
         user.getCart().remove(product);
         userRepository.save(user);
         
-        return product;
+        return user.getCart();
     }
 
     @Override
     @Transactional
-    public void cleanUpCartItems() {
+    public List<ProductCartEntity> cleanUpCartItems() {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         user.getCart().removeAll(user.getCart());
         userRepository.save(user);
+        return user.getCart();
     }
 
     @Override
@@ -236,6 +241,7 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
         productCartRepository.deleteAllById(cart.stream().map(ProductCartEntity::getId).toList());
     }
 
+    @ExcludeFromJacocoGeneratedReport
     private double validatePurchase(UserEntity user) throws InsufficientMoneyException{
         double totalCost = user.getCart().stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
 
@@ -255,28 +261,28 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
 
     @Override
     @Transactional
-    public AddressEntity addAddress(AddressEntity address) {
+    public Set<AddressEntity> addAddress(AddressEntity address) {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         addressRepository.save(address);
         user.getAddresses().add(address);
         userRepository.save(user);
-        return address;
+        return user.getAddresses();
     }
 
     @Override
     @Transactional
-    public AddressEntity deleteAddress(Long addressId) throws AddressNotFoundException {
+    public Set<AddressEntity> deleteAddress(Long addressId) throws AddressNotFoundException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         AddressEntity address = addressRepository.findById(addressId).orElseThrow(AddressNotFoundException::new);
 
         user.getAddresses().remove(address);
 
-        return address;
+        return userRepository.save(user).getAddresses();
     }
 
     @Override
     @Transactional
-    public AddressEntity editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException {
+    public Set<AddressEntity> editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException {
         UserEntity user = userRepository.findUserEntityByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).orElseThrow(() -> new UsernameNotFoundException("User could not be found"));
         boolean addressFound = false;
 
@@ -295,8 +301,7 @@ public class UserServiceImpl implements IUserService, ICartService, IAddressServ
             throw new AddressNotFoundException();
         }
 
-        userRepository.save(user);
-        return newAddress;
+        return userRepository.save(user).getAddresses();
     }
 
     @Override

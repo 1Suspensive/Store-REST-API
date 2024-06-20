@@ -7,8 +7,7 @@ import java.util.Set;
 
 public interface IAddressService {
     Set<AddressEntity> getAddresses();
-    AddressEntity addAddress(AddressEntity address);
-    AddressEntity deleteAddress(Long addressId) throws AddressNotFoundException;
-    AddressEntity editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException;
-
+    Set<AddressEntity> addAddress(AddressEntity address);
+    Set<AddressEntity> deleteAddress(Long addressId) throws AddressNotFoundException;
+    Set<AddressEntity> editAddress(AddressEntity newAddress, Long addressId) throws AddressNotFoundException;
 }

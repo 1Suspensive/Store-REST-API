@@ -102,15 +102,15 @@ public class CartController {
                     description = "Product deleted from cart.",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ProductCartEntity.class)
+                            array = @ArraySchema(schema = @Schema(implementation = ProductCartEntity.class))
                     )
 
             )
 
     )
     @PatchMapping("delete/{productId}")
-    public ResponseEntity<BasicResponseDTO<ProductCartEntity>> deleteCartProduct(@PathVariable Long productId) throws ProductNotFoundException{
-        BasicResponseDTO<ProductCartEntity> response = new BasicResponseDTO<>("Product deleted from cart.", userService.deleteCartProduct(productId));
+    public ResponseEntity<BasicResponseDTO<List<ProductCartEntity>>> deleteCartProduct(@PathVariable Long productId) throws ProductNotFoundException{
+        BasicResponseDTO<List<ProductCartEntity>> response = new BasicResponseDTO<>("Product deleted from cart.", userService.deleteCartProduct(productId));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -131,9 +131,8 @@ public class CartController {
 
     )
     @PatchMapping("clean-up")
-    public ResponseEntity<BasicResponseDTO> cleanUpCartItems(){
-        userService.cleanUpCartItems();
-        return new ResponseEntity<>(new BasicResponseDTO("Now your cart is empty!", null), HttpStatus.OK);
+    public ResponseEntity<BasicResponseDTO<List<ProductCartEntity>>> cleanUpCartItems(){
+        return new ResponseEntity<>(new BasicResponseDTO("Now your cart is empty!", userService.cleanUpCartItems()), HttpStatus.OK);
     }
 
     @Operation(

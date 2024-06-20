@@ -83,15 +83,15 @@ public class AddressController {
                     description = "Address added successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = AddressEntity.class)
+                            array = @ArraySchema(schema = @Schema(implementation = AddressEntity.class))
                     )
 
             )
 
     )
     @PatchMapping("addresses/add")
-    public ResponseEntity<BasicResponseDTO<AddressEntity>> addAddress(@RequestBody AddressEntity address){
-        BasicResponseDTO<AddressEntity> response = new BasicResponseDTO<>("Address added successfully!", userService.addAddress(address));
+    public ResponseEntity<BasicResponseDTO<Set<AddressEntity>>> addAddress(@RequestBody AddressEntity address){
+        BasicResponseDTO<Set<AddressEntity>> response = new BasicResponseDTO<>("Address added successfully!", userService.addAddress(address));
         return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
@@ -112,8 +112,8 @@ public class AddressController {
 
     )
     @PatchMapping("addresses/delete/{addressId}")
-    public ResponseEntity<BasicResponseDTO<AddressEntity>> deleteAddress(@PathVariable Long addressId) throws AddressNotFoundException{
-        BasicResponseDTO<AddressEntity> response = new BasicResponseDTO<>("Address deleted successfully!", userService.deleteAddress(addressId));
+    public ResponseEntity<BasicResponseDTO<Set<AddressEntity>>> deleteAddress(@PathVariable Long addressId) throws AddressNotFoundException{
+        BasicResponseDTO<Set<AddressEntity>> response = new BasicResponseDTO<>("Address deleted successfully!", userService.deleteAddress(addressId));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -146,15 +146,15 @@ public class AddressController {
                     description = "Address edited successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = AddressEntity.class)
+                            array = @ArraySchema(schema = @Schema(implementation = AddressEntity.class))
                     )
 
             )
 
     )
     @PatchMapping("addresses/edit/{addressId}")
-    public ResponseEntity<BasicResponseDTO<AddressEntity>> editAddress(@RequestBody AddressEntity address, @PathVariable Long addressId) throws AddressNotFoundException{
-        BasicResponseDTO<AddressEntity> response = new BasicResponseDTO<>("Address edited successfully!", userService.editAddress(address, addressId));
+    public ResponseEntity<BasicResponseDTO<Set<AddressEntity>>> editAddress(@RequestBody AddressEntity address, @PathVariable Long addressId) throws AddressNotFoundException{
+        BasicResponseDTO<Set<AddressEntity>> response = new BasicResponseDTO<>("Address edited successfully!", userService.editAddress(address, addressId));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 

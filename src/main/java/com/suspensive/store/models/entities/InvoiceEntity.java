@@ -25,7 +25,7 @@ public class InvoiceEntity {
     private AddressEntity address;
 
     public static final double taxes = 0.19;
-    
+
     @Column(name = "total_cost")
     private double totalCost;
 

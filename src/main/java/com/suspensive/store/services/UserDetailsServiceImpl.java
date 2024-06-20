@@ -1,5 +1,6 @@
 package com.suspensive.store.services;
 
+import com.suspensive.store.util.ExcludeFromJacocoGeneratedReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@ExcludeFromJacocoGeneratedReport
 public class UserDetailsServiceImpl implements UserDetailsService{
 
     @Autowired

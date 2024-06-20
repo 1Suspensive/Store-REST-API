@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
@@ -27,19 +28,18 @@ public class JwtUtils {
         Algorithm algorithm = Algorithm.HMAC256(key);
 
         String authorities = authentication.getAuthorities().stream()
-                            .map(authority -> authority.getAuthority())
+                            .map(GrantedAuthority::getAuthority)
                             .collect(Collectors.joining(","));
 
-        String jwtToken = JWT.create()
-                        .withIssuer(this.userGenerator)
-                        .withSubject(authentication.getPrincipal().toString())
-                        .withClaim("authorities", authorities)
-                        .withIssuedAt(new Date())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + 900000))
-                        .withJWTId(UUID.randomUUID().toString())
-                        .withNotBefore(new Date(System.currentTimeMillis()))
-                        .sign(algorithm);
-        return jwtToken;
+        return JWT.create()
+                .withIssuer(this.userGenerator)
+                .withSubject(authentication.getPrincipal().toString())
+                .withClaim("authorities", authorities)
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 900000))
+                .withJWTId(UUID.randomUUID().toString())
+                .withNotBefore(new Date(System.currentTimeMillis()))
+                .sign(algorithm);
     }
 
     public DecodedJWT validateToken(String token){
