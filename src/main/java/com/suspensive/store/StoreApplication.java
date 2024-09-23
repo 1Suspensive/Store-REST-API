@@ -55,7 +55,7 @@ public class StoreApplication implements CommandLineRunner {
 		UserEntity admin = UserEntity.builder()
 				.username("Jeferson")
 				.password(passwordEncoder.encode("1234"))
-				.email("jefeerson@gmail.com")
+				.email("jeferson@gmail.com")
 				.phoneNumber("3008317482")
 				.wallet(1000000)
 				.roles(Set.of(role1,role2,role3))

@@ -1,17 +1,17 @@
 services:
   store_app:
     container_name: store_app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://store_db:3306/spring-store
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345678
+      SECURITY_JWT_KEY: 3fe9545f11d5fc24be4bf8f72abf187e422b07f87f5a11f0d1ba9f7adf773f7c
+      SECURITY_JWT_USER: SUSPENSIVEJWT-BACKEND
+      JAVA_MAIL_SENDER_USERNAME: suspensive3@gmail.com
+      JAVA_MAIL_SENDER_PASSWORD: gnns ecua rivk xklb
     build: .
     ports:
       - 8080:8001
-    environment:
-      - DATABASE_URL=jdbc:mysql://store_db:3306/spring-store
-      - DATABASE_USERNAME=root
-      - DATABASE_PASSWORD=12345678
-      - JWT_KEY=3fe9545f11d5fc24be4bf8f72abf187e422b07f87f5a11f0d1ba9f7adf773f7c
-      - JWT_USER=SUSPENSIVEJWT-BACKEND
-      - MAIL_USERNAME=suspensive3@gmail.com
-      - MAIL_PASSWORD=gnns ecua rivk xklb
     depends_on:
       - store_db
     links:
