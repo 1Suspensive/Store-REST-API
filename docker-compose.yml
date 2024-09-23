@@ -3,7 +3,7 @@ services:
     container_name: store_app
     build: .
     ports:
-      - 8080:8080
+      - 8080:8001
     environment:
       - DATABASE_URL=jdbc:mysql://store_db:3306/spring-store
       - DATABASE_USERNAME=root
