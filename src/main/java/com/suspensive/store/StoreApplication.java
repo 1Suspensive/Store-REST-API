@@ -45,7 +45,11 @@ public class StoreApplication implements CommandLineRunner {
 		if("stg".equals(activeProfile)){
 			runForTestProfile();
 		}else{
-			populatePermissionsAndRolesDatabase();
+			try{
+				populatePermissionsAndRolesDatabase();
+			}catch (Exception e){
+				System.out.println("Permissions and Roles already populated");
+			}
 		}
 	}
 
